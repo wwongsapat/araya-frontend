@@ -9,21 +9,23 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceArea,
-  Brush,
+  ReferenceLine,
 } from "recharts";
 import { format } from "date-fns";
 import { Sun, Moon, Sunset } from "lucide-react";
-import { HealthData } from "./DataProvider";
+import { HealthData } from "./utils";
 
 interface BPChartProps {
   data: HealthData[];
-  brushState: { startIndex?: number; endIndex?: number };
-  onBrushChange: (newBrush: any) => void;
 }
 
 const CustomDot = (props: any) => {
   const { cx, cy, payload } = props;
+
+  // Protect against Recharts animation NaN bugs during domain changes
+  if (typeof cx !== "number" || isNaN(cx) || typeof cy !== "number" || isNaN(cy)) {
+    return null;
+  }
 
   let Icon = Sun;
   let color = "#ff9500"; // Morning (Orange)
@@ -34,6 +36,8 @@ const CustomDot = (props: any) => {
   } else if (payload.period === "Night") {
     Icon = Moon;
     color = "#5e5ce6"; // Night (Purple)
+  } else if (payload.period === "Average") {
+    return <circle cx={cx} cy={cy} r={3} fill="#8e8e93" stroke="none" />;
   }
 
   return (
@@ -55,6 +59,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           {data.period === "Morning" && <Sun size={14} className="text-[#ff9500]" />}
           {data.period === "Afternoon" && <Sunset size={14} className="text-[#ff3b30]" />}
           {data.period === "Night" && <Moon size={14} className="text-[#5e5ce6]" />}
+          {data.period === "Average" && <div className="w-2 h-2 rounded-full bg-[#8e8e93]" />}
           <span className="text-sm font-semibold">{data.period}</span>
         </div>
         <p className="text-[#ff3b30] font-semibold text-sm">
@@ -69,7 +74,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function BPChart({ data, brushState, onBrushChange }: BPChartProps) {
+export default function BPChart({ data }: BPChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="h-[300px] flex items-center justify-center text-gray-400">
@@ -88,14 +93,13 @@ export default function BPChart({ data, brushState, onBrushChange }: BPChartProp
         <p className="text-sm text-gray-500">Systolic & Diastolic Trends</p>
       </div>
       <div className="w-full h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <LineChart data={data} syncId="healthChart" margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-apple-gray-light)" />
             
             <XAxis
               dataKey="timestamp"
               type="number"
-              scale="time"
               domain={["dataMin", "dataMax"]}
               tickFormatter={(unixTime) => format(new Date(unixTime), "MMM d")}
               axisLine={false}
@@ -112,7 +116,8 @@ export default function BPChart({ data, brushState, onBrushChange }: BPChartProp
             
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--color-apple-gray-light)", strokeWidth: 2 }} />
             
-            <ReferenceArea y1={80} y2={120} fill="#34c759" fillOpacity={0.05} />
+            <ReferenceLine y={80} stroke="#34c759" strokeOpacity={0.3} strokeDasharray="4 4" />
+            <ReferenceLine y={120} stroke="#34c759" strokeOpacity={0.3} strokeDasharray="4 4" />
 
             <Line
               type="monotone"
@@ -131,17 +136,6 @@ export default function BPChart({ data, brushState, onBrushChange }: BPChartProp
               dot={<CustomDot />}
               activeDot={{ r: 6, strokeWidth: 0, fill: "#007aff" }}
               isAnimationActive={true}
-            />
-            
-            <Brush 
-              dataKey="timestamp"
-              height={30} 
-              stroke="#007aff" 
-              fill="var(--color-apple-bg)"
-              tickFormatter={(unixTime) => format(new Date(unixTime), "MMM d")}
-              startIndex={brushState.startIndex}
-              endIndex={brushState.endIndex}
-              onChange={onBrushChange}
             />
           </LineChart>
         </ResponsiveContainer>

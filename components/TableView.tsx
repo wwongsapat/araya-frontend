@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { HealthData } from "./DataProvider";
+import { HealthData } from "./utils";
 import { format } from "date-fns";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Sun, Sunset, Moon, Activity, Heart } from "lucide-react";
 import clsx from "clsx";

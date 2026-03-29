@@ -1,15 +1,7 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
-
-export interface HealthData {
-  datetime: string;
-  timestamp: number;
-  systolic: number;
-  diastolic: number;
-  heart_rate: number;
-  period: "Morning" | "Afternoon" | "Night";
-}
+import { HealthData } from "./utils";
 
 export async function fetchHealthData(): Promise<HealthData[]> {
   const filePath = path.join(process.cwd(), "app", "data", "arma_bp_records.csv");
@@ -37,5 +29,5 @@ export async function fetchHealthData(): Promise<HealthData[]> {
       ...d,
       timestamp: new Date(safeDateStr).getTime(),
     };
-  }).sort((a, b) => a.timestamp - b.timestamp);
+  }).filter((d) => !isNaN(d.timestamp)).sort((a, b) => a.timestamp - b.timestamp);
 }

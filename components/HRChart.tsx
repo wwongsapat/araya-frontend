@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { Sun, Moon, Sunset, Heart } from "lucide-react";
-import { HealthData } from "./DataProvider";
+import { HealthData } from "./utils";
 
 interface HRChartProps {
   data: HealthData[];
@@ -30,6 +30,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           {data.period === "Morning" && <Sun size={14} className="text-[#ff9500]" />}
           {data.period === "Afternoon" && <Sunset size={14} className="text-[#ff3b30]" />}
           {data.period === "Night" && <Moon size={14} className="text-[#5e5ce6]" />}
+          {data.period === "Average" && <div className="w-2 h-2 rounded-full bg-[#8e8e93]" />}
           <span className="text-sm font-semibold">{data.period}</span>
         </div>
         <p className="text-[#ff2d55] font-semibold text-lg flex items-center gap-1">
@@ -45,6 +46,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const MinimalDot = (props: any) => {
   const { cx, cy, payload } = props;
   
+  // Protect against Recharts animation NaN bugs during domain changes
+  if (typeof cx !== "number" || isNaN(cx) || typeof cy !== "number" || isNaN(cy)) {
+    return null;
+  }
+
+  if (payload.period === "Average") {
+    return <circle cx={cx} cy={cy} r={3} fill="#8e8e93" stroke="none" />;
+  }
+
   let color = "#ff9500"; 
   if (payload.period === "Afternoon") color = "#ff3b30";
   if (payload.period === "Night") color = "#5e5ce6"; 
@@ -73,7 +83,7 @@ export default function HRChart({ data }: HRChartProps) {
         <p className="text-sm text-gray-500">Beats Per Minute (BPM)</p>
       </div>
       <div className="w-full h-[250px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <AreaChart data={data} syncId="healthChart" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorHr" x1="0" y1="0" x2="0" y2="1">
@@ -85,7 +95,6 @@ export default function HRChart({ data }: HRChartProps) {
             <XAxis
               dataKey="timestamp"
               type="number"
-              scale="time"
               domain={["dataMin", "dataMax"]}
               tickFormatter={(unixTime) => format(new Date(unixTime), "MMM d")}
               axisLine={false}
