@@ -10,6 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceArea,
+  Brush,
 } from "recharts";
 import { format } from "date-fns";
 import { Sun, Moon, Sunset } from "lucide-react";
@@ -17,6 +18,8 @@ import { HealthData } from "./DataProvider";
 
 interface BPChartProps {
   data: HealthData[];
+  brushState: { startIndex?: number; endIndex?: number };
+  onBrushChange: (newBrush: any) => void;
 }
 
 const CustomDot = (props: any) => {
@@ -33,7 +36,6 @@ const CustomDot = (props: any) => {
     color = "#5e5ce6"; // Night (Purple)
   }
 
-  // Offset the dot so it centers on the line coordinate
   return (
     <svg x={cx - 10} y={cy - 10} width={20} height={20} fill="none" viewBox="0 0 24 24">
       <Icon color={color} size={20} strokeWidth={2.5} />
@@ -67,8 +69,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function BPChart({ data }: BPChartProps) {
-  // If no data, return empty state
+export default function BPChart({ data, brushState, onBrushChange }: BPChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="h-[300px] flex items-center justify-center text-gray-400">
@@ -77,20 +78,18 @@ export default function BPChart({ data }: BPChartProps) {
     );
   }
 
-  // Calculate safe min max bounds for robust visualization
-  const minDiastolic = Math.min(...data.map(d => d.diastolic)) - 10;
-  const maxSystolic = Math.max(...data.map(d => d.systolic)) + 10;
+  const minDiastolic = Math.min(...data.map((d) => d.diastolic)) - 10;
+  const maxSystolic = Math.max(...data.map((d) => d.systolic)) + 10;
 
   return (
-    <div className="apple-card w-full h-[350px]">
+    <div className="apple-card w-full h-[400px]">
       <div className="mb-4">
         <h2 className="text-lg font-semibold tracking-tight">Blood Pressure</h2>
         <p className="text-sm text-gray-500">Systolic & Diastolic Trends</p>
       </div>
-      <div className="w-full h-[250px]">
+      <div className="w-full h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            {/* Apple style soft grid */}
+          <LineChart data={data} syncId="healthChart" margin={{ top: 10, right: 10, left: -20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-apple-gray-light)" />
             
             <XAxis
@@ -111,9 +110,8 @@ export default function BPChart({ data }: BPChartProps) {
               tick={{ fontSize: 12, fill: "var(--color-apple-gray)" }}
             />
             
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--color-apple-gray-light)', strokeWidth: 2 }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ stroke: "var(--color-apple-gray-light)", strokeWidth: 2 }} />
             
-            {/* Healthy Range Area */}
             <ReferenceArea y1={80} y2={120} fill="#34c759" fillOpacity={0.05} />
 
             <Line
@@ -133,6 +131,17 @@ export default function BPChart({ data }: BPChartProps) {
               dot={<CustomDot />}
               activeDot={{ r: 6, strokeWidth: 0, fill: "#007aff" }}
               isAnimationActive={true}
+            />
+            
+            <Brush 
+              dataKey="timestamp"
+              height={30} 
+              stroke="#007aff" 
+              fill="var(--color-apple-bg)"
+              tickFormatter={(unixTime) => format(new Date(unixTime), "MMM d")}
+              startIndex={brushState.startIndex}
+              endIndex={brushState.endIndex}
+              onChange={onBrushChange}
             />
           </LineChart>
         </ResponsiveContainer>

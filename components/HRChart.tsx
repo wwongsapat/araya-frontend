@@ -42,16 +42,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// We don't render big symbols on the line itself here to keep it distinct from BP chart,
-// but we still could. The prompt mentioned "symbol that indicate morning... on each datapoint".
-// Let's implement minimal dot variant for Heart Rate
-
 const MinimalDot = (props: any) => {
   const { cx, cy, payload } = props;
   
-  let color = "#ff9500"; // Morning (Orange)
-  if (payload.period === "Afternoon") color = "#ff3b30"; // Afternoon (Red)
-  if (payload.period === "Night") color = "#5e5ce6"; // Night (Purple)
+  let color = "#ff9500"; 
+  if (payload.period === "Afternoon") color = "#ff3b30";
+  if (payload.period === "Night") color = "#5e5ce6"; 
 
   return (
     <circle cx={cx} cy={cy} r={4} fill={color} stroke="white" strokeWidth={2} />
@@ -78,7 +74,7 @@ export default function HRChart({ data }: HRChartProps) {
       </div>
       <div className="w-full h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={data} syncId="healthChart" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="colorHr" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#ff2d55" stopOpacity={0.3}/>

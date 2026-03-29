@@ -1,44 +1,60 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import BPChart from "./BPChart";
 import HRChart from "./HRChart";
+import TableView from "./TableView";
 import { HealthData } from "./DataProvider";
-import { subDays, subMonths, isAfter } from "date-fns";
+import { subDays, subMonths } from "date-fns";
 import clsx from "clsx";
 
-type Timeframe = "1W" | "1M" | "3M" | "ALL";
+type Timeframe = "1W" | "1M" | "3M" | "ALL" | "CUSTOM";
 
 interface DashboardProps {
   initialData: HealthData[];
 }
 
 export default function Dashboard({ initialData }: DashboardProps) {
+  const [viewMode, setViewMode] = useState<"charts" | "table">("charts");
   const [timeframe, setTimeframe] = useState<Timeframe>("ALL");
+  const [brushState, setBrushState] = useState<{ startIndex?: number; endIndex?: number }>({
+    startIndex: 0,
+    endIndex: initialData.length > 0 ? initialData.length - 1 : 0,
+  });
 
-  const filteredData = useMemo(() => {
-    if (!initialData || initialData.length === 0) return [];
-    
-    // Determine the latest date in the dataset to calculate offsets relative to it
-    // instead of real current date, so that the static sample dataset always works.
-    const latestTimestamp = Math.max(...initialData.map(d => d.timestamp));
+  // Calculate default indices when timeframe buttons are clicked
+  const handleTimeframeChange = (tf: Timeframe) => {
+    setTimeframe(tf);
+
+    if (initialData.length === 0) return;
+
+    const latestTimestamp = Math.max(...initialData.map((d) => d.timestamp));
     const latestDate = new Date(latestTimestamp);
+    
+    let targetTime = 0;
+    if (tf === "1W") targetTime = subDays(latestDate, 7).getTime();
+    else if (tf === "1M") targetTime = subMonths(latestDate, 1).getTime();
+    else if (tf === "3M") targetTime = subMonths(latestDate, 3).getTime();
+    else if (tf === "ALL") targetTime = 0;
 
-    return initialData.filter(d => {
-      const date = new Date(d.timestamp);
-      switch (timeframe) {
-        case "1W":
-          return isAfter(date, subDays(latestDate, 7));
-        case "1M":
-          return isAfter(date, subMonths(latestDate, 1));
-        case "3M":
-          return isAfter(date, subMonths(latestDate, 3));
-        case "ALL":
-        default:
-          return true;
-      }
+    if (tf !== "CUSTOM") {
+      let startIndex = initialData.findIndex((d) => d.timestamp >= targetTime);
+      if (startIndex === -1) startIndex = 0; 
+      
+      setBrushState({
+        startIndex,
+        endIndex: initialData.length - 1,
+      });
+    }
+  };
+
+  const handleBrushChange = (newBrush: any) => {
+    setBrushState({
+      startIndex: newBrush.startIndex,
+      endIndex: newBrush.endIndex,
     });
-  }, [initialData, timeframe]);
+    setTimeframe("CUSTOM");
+  };
 
   const timeframes: Timeframe[] = ["1W", "1M", "3M", "ALL"];
 
@@ -52,10 +68,10 @@ export default function Dashboard({ initialData }: DashboardProps) {
         
         {/* Apple style segmented control */}
         <div className="flex bg-[#e3e3e8] dark:bg-[#2c2c2e] p-1 rounded-xl w-full md:w-auto">
-          {timeframes.map(tf => (
+          {timeframes.map((tf) => (
             <button
               key={tf}
-              onClick={() => setTimeframe(tf)}
+              onClick={() => handleTimeframeChange(tf)}
               className={clsx(
                 "flex-1 md:w-16 py-1.5 text-sm font-medium rounded-lg transition-all duration-200",
                 timeframe === tf 
@@ -66,21 +82,66 @@ export default function Dashboard({ initialData }: DashboardProps) {
               {tf}
             </button>
           ))}
+          {timeframe === "CUSTOM" && (
+            <div className="flex-1 md:w-20 py-1.5 text-sm font-medium rounded-lg text-center bg-white dark:bg-[#636366] text-blue-500 shadow-sm transition-all duration-200">
+              Custom
+            </div>
+          )}
         </div>
       </header>
-
-      {/* Grid Layout for Charts */}
-      <div className="grid grid-cols-1 gap-6">
-        <BPChart data={filteredData} />
-        <HRChart data={filteredData} />
-      </div>
-
-      <div className="apple-card mt-8 bg-blue-50/50 dark:bg-blue-900/10 border-none">
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-          <p className="text-sm font-medium">Tip: Use the timeframe selector above to zoom in and out of your historical health records.</p>
+      
+      {/* Top View Switcher */}
+      <div className="flex justify-center mb-2">
+        <div className="flex bg-[#e3e3e8] dark:bg-[#2c2c2e] p-1 rounded-xl w-full md:w-auto shadow-inner">
+          <button
+            onClick={() => setViewMode("charts")}
+            className={clsx(
+              "flex-1 md:w-24 py-1.5 text-sm font-semibold rounded-lg transition-all duration-200",
+              viewMode === "charts" 
+                ? "bg-white dark:bg-[#636366] text-black dark:text-white shadow-sm" 
+                : "text-gray-500 hover:text-black dark:hover:text-white"
+            )}
+          >
+            Charts
+          </button>
+          <button
+            onClick={() => setViewMode("table")}
+            className={clsx(
+              "flex-1 md:w-24 py-1.5 text-sm font-semibold rounded-lg transition-all duration-200",
+              viewMode === "table" 
+                ? "bg-white dark:bg-[#636366] text-black dark:text-white shadow-sm" 
+                : "text-gray-500 hover:text-black dark:hover:text-white"
+            )}
+          >
+            List
+          </button>
         </div>
       </div>
+
+      {viewMode === "charts" ? (
+        <>
+          {/* Grid Layout for Charts */}
+          <div className="grid grid-cols-1 gap-6">
+            <BPChart 
+              data={initialData} 
+              brushState={brushState} 
+              onBrushChange={handleBrushChange} 
+            />
+            <HRChart data={initialData} />
+          </div>
+
+          <div className="apple-card mt-8 bg-blue-50/50 dark:bg-blue-900/10 border-none">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <p className="text-sm font-medium flex-1">
+                Tip: Drag the handles on the interactive slider under the Blood Pressure chart to scrub through historical periods. The Heart Rate chart will automatically sync.
+              </p>
+            </div>
+          </div>
+        </>
+      ) : (
+        <TableView data={initialData} />
+      )}
     </div>
   );
 }
