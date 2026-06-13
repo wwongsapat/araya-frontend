@@ -1,12 +1,22 @@
-import { fetchHealthData } from "@/components/DataProvider";
-import Dashboard from "@/components/Dashboard";
+"use client";
 
-export default async function Home() {
-  const healthData = await fetchHealthData();
+import { useAuth } from "@/shared/auth";
+import { HomeView, LandingView } from "@/domains/home";
+
+export default function Home() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-gray-300 border-t-[#007aff] rounded-full animate-spin" />
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen">
-      <Dashboard initialData={healthData} />
+      {isAuthenticated ? <HomeView /> : <LandingView />}
     </main>
   );
 }

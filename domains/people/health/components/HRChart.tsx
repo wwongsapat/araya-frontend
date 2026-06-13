@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { Sun, Moon, Sunset, Heart } from "lucide-react";
-import { HealthData } from "./utils";
+import { HealthData } from "../types/health.types";
 
 interface HRChartProps {
   data: HealthData[];

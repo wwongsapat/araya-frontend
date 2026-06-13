@@ -1,10 +1,10 @@
 import fs from "fs";
 import path from "path";
 import Papa from "papaparse";
-import { HealthData } from "./utils";
+import { HealthData } from "../types/health.types";
 
 export async function fetchHealthData(): Promise<HealthData[]> {
-  const filePath = path.join(process.cwd(), "app", "data", "arma_bp_records.csv");
+  const filePath = path.join(process.cwd(), "app", "data", "mum_bp_records.csv");
   const fileContent = fs.readFileSync(filePath, "utf8");
 
   const results = Papa.parse(fileContent, {

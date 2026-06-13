@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { Sun, Moon, Sunset } from "lucide-react";
-import { HealthData } from "./utils";
+import { HealthData } from "../types/health.types";
 
 interface BPChartProps {
   data: HealthData[];

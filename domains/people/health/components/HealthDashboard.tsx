@@ -4,7 +4,8 @@ import React, { useState, useMemo, useRef, useCallback } from "react";
 import BPChart from "./BPChart";
 import HRChart from "./HRChart";
 import TableView from "./TableView";
-import { HealthData, aggregateData } from "./utils";
+import { HealthData } from "../types/health.types";
+import { aggregateData } from "../utils/aggregateData";
 import { subDays, format } from "date-fns";
 import clsx from "clsx";
 
@@ -112,7 +113,7 @@ function DualRangeSlider({ start, end, onStartChange, onEndChange }: DualRangeSl
 }
 // ──────────────────────────────────────────────────────────────────────────────
 
-export default function Dashboard({ initialData }: DashboardProps) {
+export default function HealthDashboard({ initialData }: DashboardProps) {
   const [viewMode, setViewMode] = useState<"charts" | "table">("charts");
   const [timeframe, setTimeframe] = useState<Timeframe>("ALL");
 

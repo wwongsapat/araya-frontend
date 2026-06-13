@@ -1,11 +1,4 @@
-export interface HealthData {
-  datetime: string;
-  timestamp: number;
-  systolic: number;
-  diastolic: number;
-  heart_rate: number;
-  period: "Morning" | "Afternoon" | "Night" | "Average";
-}
+import { HealthData } from "../types/health.types";
 
 export function aggregateData(data: HealthData[], bucketMs: number): HealthData[] {
   // Force a fresh array reference to bypass Recharts cache corruption on scale domains
