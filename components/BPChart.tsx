@@ -11,9 +11,8 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import { format } from "date-fns";
 import { Sun, Moon, Sunset } from "lucide-react";
-import { HealthData } from "./utils";
+import { HealthData, formatUTC } from "./utils";
 
 interface BPChartProps {
   data: HealthData[];
@@ -53,7 +52,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-white dark:bg-[#1c1c1e] p-3 rounded-xl shadow-lg border border-black/5 dark:border-white/10">
         <p className="text-xs text-gray-500 font-medium mb-1">
-          {format(new Date(data.timestamp), "MMM d, yyyy - h:mm a")}
+          {formatUTC(data.timestamp, "MMM d, yyyy - h:mm a")}
         </p>
         <div className="flex items-center gap-2 mb-2">
           {data.period === "Morning" && <Sun size={14} className="text-[#ff9500]" />}
@@ -101,7 +100,7 @@ export default function BPChart({ data }: BPChartProps) {
               dataKey="timestamp"
               type="number"
               domain={["dataMin", "dataMax"]}
-              tickFormatter={(unixTime) => format(new Date(unixTime), "MMM d")}
+              tickFormatter={(unixTime) => formatUTC(unixTime, "MMM d")}
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: "var(--color-apple-gray)" }}

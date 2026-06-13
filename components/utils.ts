@@ -36,3 +36,34 @@ export function aggregateData(data: HealthData[], bucketMs: number): HealthData[
     } as HealthData;
   });
 }
+
+export function formatUTC(timestamp: number, formatStr: string): string {
+  const date = new Date(timestamp);
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth(); // 0-11
+  const day = date.getUTCDate();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+
+  const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const hours12 = hours % 12 === 0 ? 12 : hours % 12;
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const minStr = minutes.toString().padStart(2, "0");
+
+  switch (formatStr) {
+    case "MMM d, yyyy":
+      return `${monthsShort[month]} ${day}, ${year}`;
+    case "h:mm a":
+      return `${hours12}:${minStr} ${ampm}`;
+    case "MMM d, yyyy - h:mm a":
+      return `${monthsShort[month]} ${day}, ${year} - ${hours12}:${minStr} ${ampm}`;
+    case "MMM d":
+      return `${monthsShort[month]} ${day}`;
+    case "MMM yyyy":
+      return `${monthsShort[month]} ${year}`;
+    default:
+      return date.toISOString();
+  }
+}
+

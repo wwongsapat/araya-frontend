@@ -23,8 +23,8 @@ export async function fetchHealthData(): Promise<HealthData[]> {
 
   // Add a valid unix timestamp to make charting time-based much easier
   return parsedData.map((d) => {
-    // Replace space with 'T' to ensure strict ISO 8601 parsing cross-platform
-    const safeDateStr = d.datetime ? d.datetime.replace(" ", "T") : "";
+    // Replace space with 'T' to ensure strict ISO 8601 parsing cross-platform, and append 'Z' to treat it as UTC
+    const safeDateStr = d.datetime ? d.datetime.replace(" ", "T") + "Z" : "";
     return {
       ...d,
       timestamp: new Date(safeDateStr).getTime(),

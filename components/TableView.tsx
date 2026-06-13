@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { HealthData } from "./utils";
-import { format } from "date-fns";
+import { HealthData, formatUTC } from "./utils";
 import { ChevronUp, ChevronDown, ChevronsUpDown, Sun, Sunset, Moon, Activity, Heart } from "lucide-react";
 import clsx from "clsx";
 
@@ -120,9 +119,9 @@ export default function TableView({ data }: TableViewProps) {
                 className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors group"
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-medium">
-                  {format(new Date(row.timestamp), "MMM d, yyyy")}
+                  {formatUTC(row.timestamp, "MMM d, yyyy")}
                   <span className="text-gray-400 font-normal ml-2">
-                    {format(new Date(row.timestamp), "h:mm a")}
+                    {formatUTC(row.timestamp, "h:mm a")}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

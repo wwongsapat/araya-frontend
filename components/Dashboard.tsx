@@ -4,8 +4,8 @@ import React, { useState, useMemo, useRef, useCallback } from "react";
 import BPChart from "./BPChart";
 import HRChart from "./HRChart";
 import TableView from "./TableView";
-import { HealthData, aggregateData } from "./utils";
-import { subDays, format } from "date-fns";
+import { HealthData, aggregateData, formatUTC } from "./utils";
+import { subDays } from "date-fns";
 import clsx from "clsx";
 
 type Timeframe = "1W" | "1M" | "3M" | "ALL" | "CUSTOM";
@@ -190,8 +190,8 @@ export default function Dashboard({ initialData }: DashboardProps) {
 
   const timeframes: Timeframe[] = ["1W", "1M", "3M", "ALL"];
 
-  const startLabel = format(new Date(visibleDomain.start || Date.now()), "MMM d, yyyy");
-  const endLabel = format(new Date(visibleDomain.end || Date.now()), "MMM d, yyyy");
+  const startLabel = formatUTC(visibleDomain.start || Date.now(), "MMM d, yyyy");
+  const endLabel = formatUTC(visibleDomain.end || Date.now(), "MMM d, yyyy");
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-6 pb-20 space-y-6">
@@ -277,8 +277,8 @@ export default function Dashboard({ initialData }: DashboardProps) {
             />
 
             <div className="flex justify-between mt-3 text-[10px] text-gray-400 font-medium">
-              <span>{format(new Date(earliestTs || Date.now()), "MMM yyyy")}</span>
-              <span>{format(new Date(latestTs || Date.now()), "MMM yyyy")}</span>
+              <span>{formatUTC(earliestTs || Date.now(), "MMM yyyy")}</span>
+              <span>{formatUTC(latestTs || Date.now(), "MMM yyyy")}</span>
             </div>
           </div>
 
